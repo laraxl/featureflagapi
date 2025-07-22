@@ -1,0 +1,497 @@
+openapi: 3.0.4
+info:
+  title: Feature Flags Toggle Service API
+  description: "This API provides endpoints to manage feature flags used to enable or disable functionality across different teams, environments, and versions."
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/laralouka-dfe/FeatureFlagService/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: feature-flags
+  description: "Operations related to managing feature flags (create, update, delete, get)."
+- name: teams
+  description: Manage teams associated with feature flags.
+- name: environments
+  description: Manage environments in which feature flags operate.
+- name: audit
+  description: Track changes and actions performed on feature flags.
+- name: schedules
+  description: Define and manage scheduling of flag toggles.
+- name: users
+  description: User management related to feature flag access.
+paths:
+  /feature-flags:
+    get:
+      tags:
+      - feature-flags
+      summary: List all feature flags
+      responses:
+        "200":
+          description: List of feature flags
+    post:
+      tags:
+      - feature-flags
+      summary: Create a new feature flag
+      responses:
+        "201":
+          description: Feature flag created
+  /feature-flags/{name}:
+    get:
+      tags:
+      - feature-flags
+      summary: Get a specific feature flag by name
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Feature flag retrieved
+    put:
+      tags:
+      - feature-flags
+      summary: Update a feature flag
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Feature flag updated
+    delete:
+      tags:
+      - feature-flags
+      summary: Delete a feature flag
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Feature flag deleted
+  /feature-flags/{name}/toggle:
+    patch:
+      tags:
+      - feature-flags
+      summary: Enable/disable the flag
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Feature flag toggled
+  /feature-flags/bulk-update:
+    post:
+      tags:
+      - feature-flags
+      summary: Bulk enable/disable or update flags
+      responses:
+        "200":
+          description: Bulk update completed
+  /teams:
+    get:
+      tags:
+      - teams
+      summary: List all teams
+      responses:
+        "200":
+          description: List of teams
+    post:
+      tags:
+      - teams
+      summary: Create a new team
+      responses:
+        "201":
+          description: Team created
+  /teams/{teamName}:
+    get:
+      tags:
+      - teams
+      summary: Get info about a specific team
+      parameters:
+      - name: teamName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Team information
+  /teams/{teamName}/flags:
+    get:
+      tags:
+      - teams
+      summary: List feature flags owned by a team
+      parameters:
+      - name: teamName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: List of team flags
+  /environments:
+    get:
+      tags:
+      - environments
+      summary: List all available environments
+      responses:
+        "200":
+          description: List of environments
+  /environments/{envName}/feature-flags:
+    get:
+      tags:
+      - environments
+      summary: Get flags with their values in that environment
+      parameters:
+      - name: envName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: List of feature flags in environment
+  /environments/{envName}/feature-flags/{name}:
+    patch:
+      tags:
+      - environments
+      summary: Enable/disable a flag in a specific environment
+      parameters:
+      - name: envName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Feature flag toggled in environment
+  /audit/logs:
+    get:
+      tags:
+      - audit
+      summary: List all toggle change logs
+      responses:
+        "200":
+          description: List of logs
+  /audit/logs/{flagName}:
+    get:
+      tags:
+      - audit
+      summary: Get change log for a specific flag
+      parameters:
+      - name: flagName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Log for the flag
+  /schedules:
+    get:
+      tags:
+      - schedules
+      summary: List all scheduled toggles
+      responses:
+        "200":
+          description: List of schedules
+    post:
+      tags:
+      - schedules
+      summary: Schedule a future flag toggle
+      responses:
+        "201":
+          description: Schedule created
+  /schedules/{scheduleId}:
+    delete:
+      tags:
+      - schedules
+      summary: Cancel a scheduled toggle
+      parameters:
+      - name: scheduleId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Schedule deleted
+  /users:
+    get:
+      tags:
+      - users
+      summary: List users
+      responses:
+        "200":
+          description: List of users
+  /users/{userId}:
+    get:
+      tags:
+      - users
+      summary: Get user profile/info
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: User info
+  /users/{userId}/logs:
+    get:
+      tags:
+      - users
+      summary: See what flags this user changed
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Logs of user
+components:
+  schemas:
+    FeatureFlag:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+          - enabled
+          - disabled
+        version:
+          type: string
+        team:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    FeatureFlagCreateRequest:
+      required:
+      - name
+      - team
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        team:
+          type: string
+        version:
+          type: string
+    FeatureFlagUpdateRequest:
+      type: object
+      properties:
+        description:
+          type: string
+        status:
+          type: string
+        version:
+          type: string
+    FeatureFlagListResponse:
+      type: object
+      properties:
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlag'
+    FeatureFlagDetailResponse:
+      allOf:
+      - $ref: '#/components/schemas/FeatureFlag'
+    FeatureFlagFilter:
+      type: object
+      properties:
+        team:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer
+    Team:
+      type: object
+      properties:
+        name:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    TeamCreateRequest:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+    TeamMember:
+      type: object
+      properties:
+        userId:
+          type: string
+        role:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+    ChangeLogEntry:
+      type: object
+      properties:
+        changedBy:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        change:
+          type: string
+    AuditEvent:
+      type: object
+      properties:
+        eventId:
+          type: string
+        type:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        details:
+          type: string
+    FlagStatusHistory:
+      type: object
+      properties:
+        name:
+          type: string
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeLogEntry'
+    Environment:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - dev
+          - staging
+          - prod
+    EnvironmentToggleMapping:
+      type: object
+      properties:
+        flagName:
+          type: string
+        environments:
+          type: array
+          items:
+            type: string
+    EnvironmentFlagStatus:
+      type: object
+      properties:
+        env:
+          type: string
+        flag:
+          type: string
+        status:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    ApiResponseMeta:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    FlagSchedule:
+      type: object
+      properties:
+        flagName:
+          type: string
+        scheduledTime:
+          type: string
+          format: date-time
+        action:
+          type: string
+    FlagTag:
+      type: object
+      properties:
+        name:
+          type: string
+    BulkFlagUpdateRequest:
+      type: object
+      properties:
+        updates:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlagUpdateRequest'
+    ToggleDependency:
+      type: object
+      properties:
+        source:
+          type: string
+        dependsOn:
+          type: array
+          items:
+            type: string
+    ToggleVariation:
+      type: object
+      properties:
+        variation:
+          type: string
+        weight:
+          type: number
+    ToggleRule:
+      type: object
+      properties:
+        condition:
+          type: string
+        outcome:
+          type: string
