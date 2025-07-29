@@ -70,5 +70,11 @@ public class TestConnectionController {
         return repository.findByTeamName(teamName);
     }
 
+    // GET /flags/status/{status}
+    @GetMapping("/status/{status}")
+    public List<FeatureFlag> getFlagsByStatus(@PathVariable String status) {
+    return repository.findByStatusIgnoreCase(status);
+    }
+
 }
 

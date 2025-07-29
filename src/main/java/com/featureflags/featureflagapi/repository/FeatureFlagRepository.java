@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface FeatureFlagRepository extends JpaRepository<FeatureFlag, String> {
     List<FeatureFlag> findByTeamName(String teamName); 
+    List<FeatureFlag> findByStatusIgnoreCase(String status);
+
 }
