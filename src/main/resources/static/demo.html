@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature Flags UI</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    input, button { margin: 0.5rem 0.3rem; padding: 0.5rem; }
+    .flag { border: 1px solid #ccc; margin-top: 1rem; padding: 1rem; border-radius: 5px; }
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Feature Flag Dashboard</h1>
+
+ <div class="row">
+  <div class="section">
+  <!-- Create -->
+  <h2>Create Flag</h2>
+  <input id="create-name" placeholder="Name" />
+  <input id="create-description" placeholder="Description" />
+  <input id="create-status" placeholder="Status (enabled/disabled)" />
+  <input id="create-version" placeholder="Version" />
+  <input id="create-teamName" placeholder="Team Name" />
+  <button onclick="createFlag()">Post Flag</button>
+  </div>
+
+  <div class="section">
+  <!-- Get All -->
+  <h2>All Flags</h2>
+  <button onclick="getFlags()">Get All Flags</button>
+  <div id="flagList"></div>
+  </div>
+
+  <div class="section">
+  <!-- Get One -->
+  <h2>Get Flag by Name</h2>
+  <input id="get-name" placeholder="Flag name" />
+  <button onclick="getFlag()">Get Flag</button>
+  <pre id="getResult"></pre>
+  </div>
+ 
+  <div class="section">
+  <h2>Get Flags by Team</h2>
+  <input id="teamNameQuery" placeholder="Team Name" />
+  <button onclick="getFlagsByTeam()">Get Team Flags</button>
+  <div id="teamFlagList"></div>
+  </div>
+
+  <div class="section">
+  <!-- Update -->
+  <h2>Update Flag</h2>
+  <input id="update-name" placeholder="Name (same)" />
+  <input id="update-status" placeholder="New Status" />
+  <input id="update-description" placeholder="New Description" />
+  <input id="update-version" placeholder="New Version" />
+  <input id="update-teamName" placeholder="New Team Name" />
+  <button onclick="updateFlag()">Update Flag</button>
+  </div>
+
+  <div class="section">
+  <!-- Delete -->
+  <h2>Delete Flag</h2>
+  <input id="delete-name" placeholder="Flag name" />
+  <button onclick="deleteFlag()">Delete Flag</button>
+  </div>
+ </div>
+  <script>
+    const baseUrl = 'http://localhost:8080/flags';
+
+    async function createFlag() {
+      const body = {
+        name: document.getElementById('create-name').value,
+        description: document.getElementById('create-description').value,
+        status: document.getElementById('create-status').value,
+        version: document.getElementById('create-version').value,
+        teamName: document.getElementById('create-teamName').value
+      };
+
+      const res = await fetch(baseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      alert('Flag created: ' + data.name);
+      getFlags();
+    }
+
+    async function getFlags() {
+      const res = await fetch(baseUrl);
+      const flags = await res.json();
+      const list = document.getElementById('flagList');
+      list.innerHTML = '';
+      flags.forEach(f => {
+        list.innerHTML += `
+          <div class="flag">
+            <strong>${f.name}</strong><br />
+            <em>${f.description}</em><br />
+            Status: ${f.status}<br />
+            Version: ${f.version}<br />
+            Team: ${f.teamName}<br />
+            Created: ${f.createdAt}<br />
+            Updated: ${f.updatedAt}<br />
+          </div>
+        `;
+      });
+    }
+
+    async function getFlag() {
+      const name = document.getElementById('get-name').value;
+      const res = await fetch(`${baseUrl}/${name}`);
+      const result = document.getElementById('getResult');
+
+      if (res.ok) {
+        const flag = await res.json();
+        result.textContent = JSON.stringify(flag, null, 2);
+      } else {
+        result.textContent = 'Flag not found';
+      }
+    }
+
+    async function getFlagsByTeam() {
+      const team = document.getElementById('teamNameQuery').value;
+
+      const res = await fetch(`${baseUrl}/team/${team}`);
+      const flags = await res.json();
+
+      const list = document.getElementById('teamFlagList');
+      list.innerHTML = '';
+
+        if (flags.length === 0) {
+        list.innerHTML = `<p>No flags found for team "${team}".</p>`;
+        return;
+      }
+
+      flags.forEach(f => {
+        list.innerHTML += `
+      <div class="flag">
+        <strong>${f.name}</strong><br />
+        <em>${f.description}</em><br />
+        Status: ${f.status}<br />
+        Version: ${f.version}<br />
+        Team: ${f.teamName}<br />
+        Created: ${f.createdAt}<br />
+        Updated: ${f.updatedAt}<br />
+      </div>
+        `;
+      });
+    }
+
+    async function updateFlag() {
+      const name = document.getElementById('update-name').value;
+      const body = {
+        name: name, // not used by backend update, but included for structure
+        description: document.getElementById('update-description').value,
+        status: document.getElementById('update-status').value,
+        version: document.getElementById('update-version').value,
+        teamName: document.getElementById('update-teamName').value
+      };
+
+      const res = await fetch(`${baseUrl}/${name}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        alert(`Flag updated: ${updated.name}`);
+        getFlags();
+      } else {
+        alert('Flag not found for update.');
+      }
+    }
+
+    async function deleteFlag() {
+      const name = document.getElementById('delete-name').value;
+      const res = await fetch(`${baseUrl}/${name}`, { method: 'DELETE' });
+
+      if (res.status === 204) {
+        alert(`Flag "${name}" deleted.`);
+        getFlags();
+      } else {
+        alert('Flag not found for deletion.');
+      }
+    }
+
+    getFlags(); // load all on start
+  </script>
+</div>
+</body>
+</html>
